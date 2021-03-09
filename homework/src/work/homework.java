@@ -1,11 +1,20 @@
+package work;
+
+import model.Board;
+import model.Move;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+import static work.Helper.generateAndPrintAllLegalMoves;
+
 public class homework {
     private static final String SINGLE = "SINGLE";
     private static final String GAME = "GAME";
+    private static final String BLACK = "BLACK";
+    private static final String WHITE = "WHITE";
 
     public static void main(String[] args) {
         Scanner scanner = null;
@@ -14,20 +23,17 @@ public class homework {
             scanner = new Scanner(new File("homework/src/input.txt"));
             String typeOfPlay = scanner.nextLine();
 
-            String nextMoveColor = scanner.nextLine();
+            boolean isNextMoveBlack = scanner.nextLine().equals(BLACK);
 
             double playTimeInSeconds = Double.parseDouble(scanner.nextLine());
-            char board[][] = new char[8][8];
+            char boardArray[][] = new char[8][8];
 
             for(int i=0; i<8; i++) {
                 char[] nextRow = scanner.nextLine().toCharArray();
-                board[i] = nextRow;
+                boardArray[i] = nextRow;
             }
 
-            /* Printing path
-            for(int i=0; i<8; i++) {
-                System.out.println(Arrays.toString(board[i]));
-            }*/
+            generateAndPrintAllLegalMoves(boardArray, isNextMoveBlack);
 
         } catch (Exception e) {
             e.printStackTrace();
