@@ -19,8 +19,8 @@ public class homework {
     public static void main(String[] args) {
         Scanner scanner = null;
         try {
-            //scanner = new Scanner(new File("src/work/externalInput.txt"));
-            scanner = new Scanner(new File("homework/src/input.txt"));
+            //scanner = new Scanner(new File("input.txt"));
+            scanner = new Scanner(new File("homework/src/work/input4.txt"));
             String typeOfPlay = scanner.nextLine();
 
             boolean isNextMoveBlack = scanner.nextLine().equals(BLACK);

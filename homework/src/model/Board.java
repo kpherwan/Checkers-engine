@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 public class Board {
     private char[][] board;
@@ -48,44 +49,6 @@ public class Board {
         }
     }
 
-    public boolean isMoveValid(Move move) {
-        //move is to a square that is not empty
-        char player = board[move.sourceRow][move.sourceColumn];
-
-        //move is outside the board
-        if (move.sourceRow < 0 || move.sourceRow > 7 || move.sourceColumn < 0 || move.sourceColumn > 7 ||
-                move.destinationRow < 0 || move.destinationRow > 7 || move.destinationColumn < 0 ||
-                move.destinationColumn > 7) {
-            return false;
-        }
-
-        else if (board[move.destinationRow][move.destinationColumn] == '.') {
-            //move is a simple move
-            if (Math.abs(move.sourceColumn - move.destinationColumn) == 1) {
-                if (player == 'w' && (move.sourceRow - move.destinationRow == 1))
-                    return true;
-                else if (player == 'b' && (move.destinationRow - move.sourceRow == 1))
-                    return true;
-                if ((player == 'W' || player == 'B') && Math.abs(move.sourceRow - move.destinationRow) == 1)
-                    return true;
-            }
-
-            //move is a jump
-            else if (Math.abs(move.sourceColumn - move.destinationColumn) == 2) {
-                char capturedCell = board[(move.sourceRow + move.destinationRow)/2][(move.destinationColumn + move.sourceColumn)/2];
-                if (player == 'w' && (move.sourceRow - move.destinationRow == 2) && (capturedCell == 'b' || capturedCell == 'B'))
-                    return true;
-                else if (player == 'b' && (move.destinationRow - move.sourceRow == 2) && (capturedCell == 'w' || capturedCell == 'W'))
-                    return true;
-                else if (player == 'B' && Math.abs(move.destinationRow - move.sourceRow) == 2 && (capturedCell == 'w' || capturedCell == 'W'))
-                    return true;
-                else if (player == 'W' && Math.abs(move.destinationRow - move.sourceRow) == 2 && (capturedCell == 'b' || capturedCell == 'B'))
-                    return true;
-            }
-        }
-        return false;
-    }
-
     public List<Move> generateAllLegalMoves() {
         char curManPlayer = isNextMoveBlack ? 'b' : 'w';
         char curKingPlayer = isNextMoveBlack ? 'B' : 'W';
@@ -93,6 +56,10 @@ public class Board {
         List<Move> legalMoves = new ArrayList<>();
         List<Cell> cellsOfCurrentPlayer = new ArrayList<>();
         Move currentMove;
+        int destinationRow;
+        int destinationColumn;
+        int captureRow;
+        int captureColumn;
 
         //get all jumps
         for (int row = 0; row < 8; row++) {
@@ -100,44 +67,44 @@ public class Board {
                 if (board[row][column] == curManPlayer || board[row][column] == curKingPlayer) {
                     cellsOfCurrentPlayer.add(new Cell(row,column));
 
-                    if(isMoveValid(currentMove = new Move(row,column, row + 2,column + 2, Move.TypeOfMove.J))){
-                        int destinationRow = row + 2;
-                        int destinationColumn = column + 2;
-                        int captureRow = row + 1;
-                        int captureColumn = column + 1;
-
-                        setSubsequentJumps(board, row, column, captureRow, captureColumn, destinationRow, destinationColumn, currentMove);
-                        legalMoves.add(currentMove);
+                    destinationRow = row + 2;
+                    destinationColumn = column + 2;
+                    captureRow = row + 1;
+                    captureColumn = column + 1;
+                    currentMove = new Move(row,column, destinationRow,destinationColumn, Move.TypeOfMove.J);
+                    if(currentMove.isMoveValid(board)){
+                        List<Move> jumps = getJumpsAfterMultiJump(board, row, column, captureRow, captureColumn, destinationRow, destinationColumn, currentMove);
+                        legalMoves.addAll(jumps);
                     }
 
-                    if(isMoveValid(currentMove = new Move(row,column, row - 2,column - 2, Move.TypeOfMove.J))){
-                        int destinationRow = row - 2;
-                        int destinationColumn = column - 2;
-                        int captureRow = row - 1;
-                        int captureColumn = column - 1;
-
-                        setSubsequentJumps(board, row, column, captureRow, captureColumn, destinationRow, destinationColumn, currentMove);
-                        legalMoves.add(currentMove);
+                    destinationRow = row - 2;
+                    destinationColumn = column - 2;
+                    captureRow = row - 1;
+                    captureColumn = column - 1;
+                    currentMove = new Move(row,column, destinationRow, destinationColumn, Move.TypeOfMove.J);
+                    if(currentMove.isMoveValid(board)){
+                        List<Move> jumps = getJumpsAfterMultiJump(board, row, column, captureRow, captureColumn, destinationRow, destinationColumn, currentMove);
+                        legalMoves.addAll(jumps);
                     }
 
-                    if(isMoveValid(currentMove = new Move(row,column, row + 2,column - 2, Move.TypeOfMove.J))){
-                        int destinationRow = row + 2;
-                        int destinationColumn = column - 2;
-                        int captureRow = row + 1;
-                        int captureColumn = column - 1;
-
-                        setSubsequentJumps(board, row, column, captureRow, captureColumn, destinationRow, destinationColumn, currentMove);
-                        legalMoves.add(currentMove);
+                    destinationRow = row + 2;
+                    destinationColumn = column - 2;
+                    captureRow = row + 1;
+                    captureColumn = column - 1;
+                    currentMove = new Move(row,column, destinationRow,destinationColumn, Move.TypeOfMove.J);
+                    if(currentMove.isMoveValid(board)){
+                        List<Move> jumps = getJumpsAfterMultiJump(board, row, column, captureRow, captureColumn, destinationRow, destinationColumn, currentMove);
+                        legalMoves.addAll(jumps);
                     }
 
-                    if(isMoveValid(currentMove = new Move(row,column, row - 2,column + 2, Move.TypeOfMove.J))){
-                        int destinationRow = row - 2;
-                        int destinationColumn = column + 2;
-                        int captureRow = row - 1;
-                        int captureColumn = column + 1;
-
-                        setSubsequentJumps(board, row, column, captureRow, captureColumn, destinationRow, destinationColumn, currentMove);
-                        legalMoves.add(currentMove);
+                    destinationRow = row - 2;
+                    destinationColumn = column + 2;
+                    captureRow = row - 1;
+                    captureColumn = column + 1;
+                    currentMove = new Move(row,column, destinationRow,destinationColumn, Move.TypeOfMove.J);
+                    if(currentMove.isMoveValid(board)){
+                        List<Move> jumps = getJumpsAfterMultiJump(board, row, column, captureRow, captureColumn, destinationRow, destinationColumn, currentMove);
+                        legalMoves.addAll(jumps);
                     }
                 }
             }
@@ -145,20 +112,24 @@ public class Board {
 
         if (legalMoves.isEmpty()) {
             for (Cell currentCell: cellsOfCurrentPlayer) {
-                if(isMoveValid(currentMove = new Move(currentCell.row, currentCell.column, currentCell.row + 1,
-                        currentCell.column + 1, Move.TypeOfMove.E)))
+                currentMove = new Move(currentCell.row, currentCell.column, currentCell.row + 1,
+                        currentCell.column + 1, Move.TypeOfMove.E);
+                if(currentMove.isMoveValid(board))
                     legalMoves.add(currentMove);
 
-                if(isMoveValid(currentMove = new Move(currentCell.row, currentCell.column, currentCell.row - 1,
-                        currentCell.column - 1, Move.TypeOfMove.E)))
+                currentMove = new Move(currentCell.row, currentCell.column, currentCell.row - 1,
+                        currentCell.column - 1, Move.TypeOfMove.E);
+                if(currentMove.isMoveValid(board))
                     legalMoves.add(currentMove);
 
-                if(isMoveValid(currentMove = new Move(currentCell.row, currentCell.column, currentCell.row + 1,
-                        currentCell.column - 1, Move.TypeOfMove.E)))
+                currentMove = new Move(currentCell.row, currentCell.column, currentCell.row + 1,
+                        currentCell.column - 1, Move.TypeOfMove.E);
+                if(currentMove.isMoveValid(board))
                     legalMoves.add(currentMove);
 
-                if(isMoveValid(currentMove = new Move(currentCell.row, currentCell.column, currentCell.row - 1,
-                        currentCell.column + 1, Move.TypeOfMove.E)))
+                currentMove = new Move(currentCell.row, currentCell.column, currentCell.row - 1,
+                        currentCell.column + 1, Move.TypeOfMove.E);
+                if(currentMove.isMoveValid(board))
                     legalMoves.add(currentMove);
             }
         }
@@ -166,14 +137,15 @@ public class Board {
         return legalMoves;
     }
 
-    private void setSubsequentJumps(char board[][], int row, int column, int captureRow, int captureColumn,
+    private List<Move> getJumpsAfterMultiJump(char board[][], int row, int column, int captureRow, int captureColumn,
                                     int destinationRow, int destinationColumn, Move currentMove) {
         char[][] newBoard = new char[8][8];
-        List subsequentJumps = new ArrayList<>();
         System.arraycopy(board, 0, newBoard, 0, 8);
-        getAllSubsequentJumps(board[row][column], row, column, captureRow, captureColumn, destinationRow,
-                destinationColumn, newBoard, destinationRow + "_" + destinationColumn, subsequentJumps);
-        currentMove.subsequentJumps = convertStringToMoves(subsequentJumps);
+        List<Move> allJumps = new ArrayList();
+        getAllSubsequentJumps(board[row][column], row, column, captureRow, captureColumn, destinationRow, destinationColumn, newBoard,
+                destinationRow + "_" + destinationColumn, new Stack<Move>(), allJumps);
+        return allJumps;
+        // currentMove.subsequentJumps = convertStringToMoves(subsequentJumps);
     }
 
     private List<Move> convertStringToMoves(List<String> subsequentJumps) {
@@ -193,49 +165,72 @@ public class Board {
 
     void getAllSubsequentJumps(char player, int sourceRow, int sourceColumn, int captureRow, int captureColumn,
                                int destinationRow, int destinationColumn, char[][] tempBoard, String source,
-                               List<String> jumps) {
-        tempBoard[captureRow][captureColumn] = '.';
-        tempBoard[sourceRow][sourceColumn] = '.';
-        tempBoard[destinationRow][destinationColumn] = player;
+                               Stack<Move> stack, List<Move> jumps) {
+        //EXECUTE MOVE
+        Move currentMove;
+        currentMove = new Move(sourceRow, sourceColumn, destinationRow, destinationColumn, Move.TypeOfMove.J);
+        stack.push(currentMove);
+        boolean multiJumpFound = false;
 
-        if (isMoveValid(new Move(destinationRow, destinationColumn, destinationRow + 2,
-                destinationColumn + 2, Move.TypeOfMove.J))) {
-            char[][] newBoard = new char[8][8];
-            System.arraycopy(tempBoard, 0, newBoard, 0, 8);
-            getAllSubsequentJumps(player, destinationRow, destinationColumn, destinationRow + 1, destinationColumn + 1,
-                    destinationRow + 2,destinationColumn + 2, newBoard,
-                    source + ":" + (destinationRow + 2) + "_" + (destinationColumn + 2), jumps);
+        if (!currentMove.isCrownMove(player)) {
+            char capturedPiece = tempBoard[captureRow][captureColumn];
+            tempBoard[captureRow][captureColumn] = '.';
+            tempBoard[sourceRow][sourceColumn] = '.';
+            tempBoard[destinationRow][destinationColumn] = player;
+
+            // TRY SUBSEQUENT JUMPS
+            currentMove = new Move(destinationRow, destinationColumn, destinationRow + 2,
+                    destinationColumn + 2, Move.TypeOfMove.J);
+            if (currentMove.isMoveValid(tempBoard)) {
+                char[][] newBoard = tempBoard.clone();
+                getAllSubsequentJumps(player, destinationRow, destinationColumn, destinationRow + 1, destinationColumn + 1,
+                        destinationRow + 2, destinationColumn + 2, newBoard,
+                        source + ":" + (destinationRow + 2) + "_" + (destinationColumn + 2), (Stack) stack.clone(), jumps);
+                multiJumpFound = true;
+            }
+
+            currentMove = new Move(destinationRow, destinationColumn, destinationRow - 2,
+                    destinationColumn - 2, Move.TypeOfMove.J);
+            if (currentMove.isMoveValid(tempBoard)) {
+                char[][] newBoard = tempBoard.clone();
+                getAllSubsequentJumps(player, destinationRow, destinationColumn, destinationRow - 1, destinationColumn - 1,
+                        destinationRow - 2, destinationColumn - 2, newBoard,
+                        source + ":" + (destinationRow - 2) + "_" + (destinationColumn - 2), (Stack) stack.clone(), jumps);
+                multiJumpFound = true;
+            }
+
+            currentMove = new Move(destinationRow, destinationColumn, destinationRow + 2,
+                    destinationColumn - 2, Move.TypeOfMove.J);
+            if (currentMove.isMoveValid(tempBoard)) {
+                char[][] newBoard = tempBoard.clone();
+                getAllSubsequentJumps(player, destinationRow, destinationColumn, destinationRow + 1, destinationColumn - 1,
+                        destinationRow + 2, destinationColumn - 2, newBoard,
+                        source + ":" + (destinationRow + 2) + "_" + (destinationColumn - 2), (Stack) stack.clone(), jumps);
+                multiJumpFound = true;
+            }
+
+            currentMove = new Move(destinationRow, destinationColumn, destinationRow - 2,
+                    destinationColumn + 2, Move.TypeOfMove.J);
+            if (currentMove.isMoveValid(tempBoard)) {
+                char[][] newBoard = tempBoard.clone();
+                getAllSubsequentJumps(player, destinationRow, destinationColumn, destinationRow - 1, destinationColumn + 1,
+                        destinationRow - 2, destinationColumn + 2, newBoard,
+                        source + ":" + (destinationRow - 2) + "_" + (destinationColumn + 2), (Stack) stack.clone(), jumps);
+                multiJumpFound = true;
+            }
+
+            tempBoard[captureRow][captureColumn] = capturedPiece;
+            tempBoard[sourceRow][sourceColumn] = player;
+            tempBoard[destinationRow][destinationColumn] = '.';
         }
 
-        if (isMoveValid(new Move(destinationRow, destinationColumn, destinationRow - 2,
-                destinationColumn - 2, Move.TypeOfMove.J))) {
-            char[][] newBoard = new char[8][8];
-            System.arraycopy(tempBoard, 0, newBoard, 0, 8);
-            getAllSubsequentJumps(player, destinationRow, destinationColumn, destinationRow - 1, destinationColumn - 1,
-                    destinationRow - 2,destinationColumn - 2, newBoard,
-                    source + ":" + (destinationRow - 2) + "_" + (destinationColumn - 2), jumps);
+        Move move = new Move(Move.TypeOfMove.J);
+        List<Move> allJumps = new ArrayList<>();
+        while(!stack.isEmpty() && !multiJumpFound) {
+            allJumps.add(0, stack.pop());
         }
+        move.jumps = allJumps;
 
-        if (isMoveValid(new Move(destinationRow, destinationColumn, destinationRow + 2,
-                destinationColumn - 2, Move.TypeOfMove.J))) {
-            char[][] newBoard = new char[8][8];
-            System.arraycopy(tempBoard, 0, newBoard, 0, 8);
-            getAllSubsequentJumps(player, destinationRow, destinationColumn, destinationRow + 1, destinationColumn - 1,
-                    destinationRow + 2,destinationColumn - 2, newBoard,
-                    source + ":" + (destinationRow + 2) + "_" + (destinationColumn - 2), jumps);
-        }
-
-        if (isMoveValid(new Move(destinationRow, destinationColumn, destinationRow - 2,
-                destinationColumn + 2, Move.TypeOfMove.J))) {
-            char[][] newBoard = new char[8][8];
-            System.arraycopy(tempBoard, 0, newBoard, 0, 8);
-            getAllSubsequentJumps(player, destinationRow, destinationColumn, destinationRow - 1, destinationColumn + 1,
-                    destinationRow - 2,destinationColumn + 2, newBoard,
-                    source + ":" + (destinationRow - 2) + "_" + (destinationColumn + 2), jumps);
-        }
-
-        if(source.length() > 3) {
-            jumps.add(source);
-        }
+        jumps.add(move);
     }
 }

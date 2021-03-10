@@ -1,13 +1,18 @@
 package model;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Move {
+    public boolean isCrownMove(char player) {
+        return (player == 'b' && destinationRow == 7) || (player == 'w' && destinationRow == 0);
+    }
+
     public enum TypeOfMove {
         E,J
+    }
+
+    public TypeOfMove getTypeOfMove() {
+        return typeOfMove;
     }
 
     private TypeOfMove typeOfMove;
@@ -16,9 +21,13 @@ public class Move {
     public int destinationRow;
     public int destinationColumn;
 
-    public List<Move> subsequentJumps;
+    public List<Move> jumps;
 
     private static Map<String,String> cellToNumber;
+
+    Move(TypeOfMove typeOfMove) {
+        this.typeOfMove = typeOfMove;
+    }
 
     Move(int sourceRow, int sourceColumn, int destinationRow, int destinationColumn, TypeOfMove typeOfMove) {
         this.sourceRow = sourceRow;
@@ -35,13 +44,6 @@ public class Move {
         this.destinationColumn = destination.column;
     }
 
-    public void addJump(Move move) {
-        if (subsequentJumps == null) {
-            subsequentJumps = new LinkedList<>();
-        }
-        subsequentJumps.add(move);
-    }
-
     public void setDestination(int destinationRow, int destinationColumn) {
         this.destinationRow = destinationRow;
         this.destinationColumn = destinationColumn;
@@ -49,7 +51,7 @@ public class Move {
 
     public String toAlphaNumericString() {
         return typeOfMove + " " + getColumnChar(sourceColumn) + getRowNum(sourceRow) + " " +
-                getColumnChar(destinationColumn) + getRowNum(destinationRow) + "/n";
+                getColumnChar(destinationColumn) + getRowNum(destinationRow);
     }
 
     public char getColumnChar(int column) {
@@ -114,6 +116,61 @@ public class Move {
         cellToNumber.put("7_2","30");
         cellToNumber.put("7_4","31");
         cellToNumber.put("7_6","32");
+    }
+
+
+    @Override
+    public String toString() {
+        return sourceRow + "_" + sourceColumn + " " + destinationRow + "_" + destinationColumn;
+    }
+
+    public boolean isMoveValid(char[][] board) {
+        //move is to a square that is not empty
+        char player = board[sourceRow][sourceColumn];
+        if (player == '.') {
+            printBoard(board);
+            System.out.println(this.toString());
+            return false;
+        }
+
+        //move is outside the board
+        if (sourceRow < 0 || sourceRow > 7 || sourceColumn < 0 || sourceColumn > 7 ||
+                destinationRow < 0 || destinationRow > 7 || destinationColumn < 0 ||
+                destinationColumn > 7) {
+            return false;
+        }
+
+        else if (board[destinationRow][destinationColumn] == '.') {
+            //move is a simple move
+            if (Math.abs(sourceColumn - destinationColumn) == 1) {
+                if (player == 'w' && (sourceRow - destinationRow == 1))
+                    return true;
+                else if (player == 'b' && (destinationRow - sourceRow == 1))
+                    return true;
+                if ((player == 'W' || player == 'B') && Math.abs(sourceRow - destinationRow) == 1)
+                    return true;
+            }
+
+            //move is a jump
+            else if (Math.abs(sourceColumn - destinationColumn) == 2) {
+                char capturedCell = board[(sourceRow + destinationRow)/2][(destinationColumn + sourceColumn)/2];
+                if (player == 'w' && (sourceRow - destinationRow == 2) && (capturedCell == 'b' || capturedCell == 'B'))
+                    return true;
+                else if (player == 'b' && (destinationRow - sourceRow == 2) && (capturedCell == 'w' || capturedCell == 'W'))
+                    return true;
+                else if (player == 'B' && Math.abs(destinationRow - sourceRow) == 2 && (capturedCell == 'w' || capturedCell == 'W'))
+                    return true;
+                else if (player == 'W' && Math.abs(destinationRow - sourceRow) == 2 && (capturedCell == 'b' || capturedCell == 'B'))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    private void printBoard(char[][] board) {
+        for (int i=0; i<8; i++) {
+            System.out.println(Arrays.toString(board[i]));
+        }
     }
 
 }
