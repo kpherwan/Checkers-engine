@@ -1,5 +1,6 @@
 package work;
 
+import core.Engine;
 import model.Board;
 import model.Move;
 
@@ -8,8 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class Helper {
-    public static void generateAndPrintAllLegalMoves(char[][] boardArray, boolean isNextMoveBlack) {
-        Board board = new Board(boardArray, isNextMoveBlack);
+    public static void generateAndPrintAllLegalMoves(Board board) {
         List<Move> moves = board.generateAllLegalMoves();
 
         int i = 1;
@@ -25,6 +25,7 @@ public class Helper {
             }
         }
 
+        System.out.println();
         i = 1;
         for(Move move: moves) {
             if (move.getTypeOfMove() == Move.TypeOfMove.E) {
@@ -37,30 +38,30 @@ public class Helper {
                 System.out.println();
             }
         }
+        System.out.println();
+    }
 
-        boolean isOneOutputDone = false;
-        i = 1;
+    public static void generateAndOutputBestMove(Board board, int depth) {
         try {
+            long startTime = System.currentTimeMillis();
             FileWriter fw = new FileWriter("output.txt");
-            for(Move move: moves) {
-                if (move.getTypeOfMove() == Move.TypeOfMove.E) {
-                    System.out.println((i++) + ": " + move.toAlphaNumericString());
-                    if (!isOneOutputDone) {
-                        fw.write(move.toAlphaNumericString() + "\n");
-                        isOneOutputDone = true;
-                    }
-                } else {
-                    for (Move jump : move.jumps) {
+            Engine engine = new Engine(board, depth);
+            Move bestMove = engine.getBestMoveWithGivenDepth();
+            if (bestMove.getTypeOfMove() == Move.TypeOfMove.E) {
+                System.out.println(bestMove.toAlphaNumericString());
+                System.out.println(bestMove.toNumericString());
+                fw.write(bestMove.toAlphaNumericString() + "\n");
+            } else {
+                for (Move jump : bestMove.jumps) {
                         System.out.println(jump.toAlphaNumericString());
-                        if (!isOneOutputDone) {
-                            fw.write(jump.toAlphaNumericString() + "\n");
-                        }
-                    }
-                    isOneOutputDone = true;
-                    System.out.println();
+                        System.out.println(jump.toNumericString());
+                        fw.write(jump.toAlphaNumericString() + "\n");
                 }
             }
             fw.close();
+            long endTime = System.currentTimeMillis();
+            System.out.println("Time taken: " + (endTime - startTime) + " milli secs");
+            System.out.println("Depth: " + depth);
         }
         catch (IOException e) {
             e.printStackTrace();

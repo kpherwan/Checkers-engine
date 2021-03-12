@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+import static work.Helper.generateAndOutputBestMove;
 import static work.Helper.generateAndPrintAllLegalMoves;
 
 public class homework {
@@ -25,6 +26,7 @@ public class homework {
 
             boolean isNextMoveBlack = scanner.nextLine().equals(BLACK);
 
+            //todo: use this time
             double playTimeInSeconds = Double.parseDouble(scanner.nextLine());
             char boardArray[][] = new char[8][8];
 
@@ -33,22 +35,10 @@ public class homework {
                 boardArray[i] = nextRow;
             }
 
-            generateAndPrintAllLegalMoves(boardArray, isNextMoveBlack);
+            Board board = new Board(boardArray, isNextMoveBlack);
+            generateAndOutputBestMove(board, 4);
 
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void addToOutputFile() {
-
-        try {
-            FileWriter fw = new FileWriter("output.txt");
-            fw.write("FAIL" + "\n");
-            StringBuilder sbr = new StringBuilder();
-            fw.close();
-        }
-        catch (IOException e) {
             e.printStackTrace();
         }
     }

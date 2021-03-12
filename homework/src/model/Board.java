@@ -6,14 +6,36 @@ import java.util.List;
 import java.util.Stack;
 
 public class Board {
+    public static final char EMPTY_CELL = '.';
+    public static final char BLACK_WOMAN = 'b';
+    public static final char WHITE_WOMAN = 'w';
+    public static final char BLACK_QUEEN = 'B';
+    public static final char WHITE_QUEEN = 'W';
+
+    public char[][] getBoard() {
+        return board;
+    }
+
     private char[][] board;
-    // b for Black Men, B for Black King, w for White Men, W for White King
+
     private int noOfBlackCoins;
     private int noOfWhiteCoins;
+    private int noOfBlackQueenCoins;
+    private int noOfWhiteQueenCoins;
+
+    public boolean isNextMoveBlack() {
+        return isNextMoveBlack;
+    }
+
+    public void flipNextMoveColor() {
+        isNextMoveBlack = !isNextMoveBlack;
+    }
+
     private boolean isNextMoveBlack;
     private int currentMoveNumber;
     private int moveNumberOfLastMaterialChange;
     private int[] movesHashArr;
+    private boolean isEngineBlack;
 
     public Board() {
         board = new char[8][8];
@@ -23,17 +45,17 @@ public class Board {
 
         for (int i=0;i<8;i++)
             for (int j=0;j<8;j++)
-                board[i][j] = '.';
+                board[i][j] = EMPTY_CELL;
 
         for (int i=1;i<8;i+=2) {
-            board[i][1] = 'b';
+            board[i][1] = BLACK_WOMAN;
             board[i][5] = 'w';
             board[i][7] = 'w';
         }
 
         for (int i=0;i<8;i+=2) {
-            board[i][0] = 'b';
-            board[i][2] = 'b';
+            board[i][0] = BLACK_WOMAN;
+            board[i][2] = BLACK_WOMAN;
             board[i][6] = 'w';
         }
     }
@@ -41,6 +63,9 @@ public class Board {
     public Board(char[][] board, boolean isNextMoveBlack) {
         this.board = board;
         this.isNextMoveBlack = isNextMoveBlack;
+        this.isEngineBlack = isNextMoveBlack;
+        noOfBlackCoins = 12;
+        noOfWhiteCoins = 12;
     }
 
     public void printBoard() {
@@ -50,7 +75,7 @@ public class Board {
     }
 
     public List<Move> generateAllLegalMoves() {
-        char curManPlayer = isNextMoveBlack ? 'b' : 'w';
+        char curNormalPlayer = isNextMoveBlack ? BLACK_WOMAN : 'w';
         char curKingPlayer = isNextMoveBlack ? 'B' : 'W';
 
         List<Move> legalMoves = new ArrayList<>();
@@ -64,7 +89,7 @@ public class Board {
         //get all jumps
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
-                if (board[row][column] == curManPlayer || board[row][column] == curKingPlayer) {
+                if (board[row][column] == curNormalPlayer || board[row][column] == curKingPlayer) {
                     cellsOfCurrentPlayer.add(new Cell(row,column));
 
                     destinationRow = row + 2;
@@ -174,8 +199,8 @@ public class Board {
 
         if (!currentMove.isCrownMove(player)) {
             char capturedPiece = tempBoard[captureRow][captureColumn];
-            tempBoard[captureRow][captureColumn] = '.';
-            tempBoard[sourceRow][sourceColumn] = '.';
+            tempBoard[captureRow][captureColumn] = EMPTY_CELL;
+            tempBoard[sourceRow][sourceColumn] = EMPTY_CELL;
             tempBoard[destinationRow][destinationColumn] = player;
 
             // TRY SUBSEQUENT JUMPS
@@ -221,7 +246,7 @@ public class Board {
 
             tempBoard[captureRow][captureColumn] = capturedPiece;
             tempBoard[sourceRow][sourceColumn] = player;
-            tempBoard[destinationRow][destinationColumn] = '.';
+            tempBoard[destinationRow][destinationColumn] = EMPTY_CELL;
         }
 
         Move move = new Move(Move.TypeOfMove.J);
@@ -232,5 +257,69 @@ public class Board {
         move.jumps = allJumps;
 
         jumps.add(move);
+    }
+
+    public boolean isEngineBlack() {
+        return isEngineBlack;
+    }
+
+    public static void cloneBoardArray(char[][] source, char[][] destination) {
+        for (int i = 0; i < source.length; i++) {
+            for (int j = 0; j < source[i].length; j++) {
+                destination[i][j] = source[i][j];
+            }
+        }
+    }
+
+    public int getNoOfBlackCoins() {
+        return noOfBlackCoins;
+    }
+
+    public int getNoOfBlackQueenCoins() {
+        return noOfBlackQueenCoins;
+    }
+
+
+    public int getNoOfWhiteQueenCoins() {
+        return noOfWhiteQueenCoins;
+    }
+
+
+    public void decrementBlackCoins() {
+        noOfBlackCoins--;
+    }
+
+    public void decrementWhiteCoins() {
+        noOfWhiteCoins--;
+    }
+
+    public void decrementBlackQueenCoins() {
+        noOfBlackQueenCoins--;
+    }
+
+    public void decrementWhiteQueenCoins() {
+        noOfWhiteQueenCoins--;
+    }
+
+    public void incrementBlackQueenCoins() {
+        noOfBlackQueenCoins++;
+    }
+
+    public void incrementWhiteQueenCoins() {
+        noOfWhiteQueenCoins++;
+    }
+
+    public int getNoOfWhiteCoins() {
+        return noOfWhiteCoins;
+    }
+
+    public void incrementNumberOfMoves() {
+        currentMoveNumber++;
+    }
+
+    private void printBoard(char[][] board) {
+        for (int i=0; i<8; i++) {
+            System.out.println(Arrays.toString(board[i]));
+        }
     }
 }

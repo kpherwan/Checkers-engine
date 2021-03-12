@@ -3,8 +3,8 @@ package model;
 import java.util.*;
 
 public class Move {
-    public boolean isCrownMove(char player) {
-        return (player == 'b' && destinationRow == 7) || (player == 'w' && destinationRow == 0);
+    public boolean isCrownMove(char pieceMoved) {
+        return (pieceMoved == 'b' && destinationRow == 7) || (pieceMoved == 'w' && destinationRow == 0);
     }
 
     public enum TypeOfMove {
@@ -128,9 +128,7 @@ public class Move {
         //move is to a square that is not empty
         char player = board[sourceRow][sourceColumn];
         if (player == '.') {
-            printBoard(board);
-            System.out.println(this.toString());
-            return false;
+            throw new IllegalArgumentException();
         }
 
         //move is outside the board
@@ -167,10 +165,10 @@ public class Move {
         return false;
     }
 
-    private void printBoard(char[][] board) {
-        for (int i=0; i<8; i++) {
-            System.out.println(Arrays.toString(board[i]));
-        }
-    }
+    public Cell getCapturedCell() {
+        int capturedRow = (this.sourceRow + this.destinationRow)/2;
+        int capturedColumn = (this.sourceColumn + this.destinationColumn)/2;
 
-}
+        return new Cell(capturedRow, capturedColumn);
+    }
+ }
