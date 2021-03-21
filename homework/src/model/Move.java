@@ -121,7 +121,21 @@ public class Move {
 
     @Override
     public String toString() {
-        return sourceRow + "_" + sourceColumn + " " + destinationRow + "_" + destinationColumn;
+        if (typeOfMove == TypeOfMove.E) {
+            return sourceRow + "_" + sourceColumn + " " + destinationRow + "_" + destinationColumn;
+        }
+        else {
+            StringBuilder sbr = new StringBuilder();
+            if (this.jumps != null) {
+                for (Move jump: this.jumps) {
+                    sbr.append(jump.toString());
+                }
+                return sbr.toString();
+            }
+            else {
+                return sourceRow + "_" + sourceColumn + " " + destinationRow + "_" + destinationColumn;
+            }
+        }
     }
 
     public boolean isMoveValid(char[][] board) {

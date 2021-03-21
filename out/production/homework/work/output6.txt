@@ -1,0 +1,13 @@
+J d8 f6
+J f6 d4
+J d4 f2
+J f2 h4
+
+J d8 f6
+J f6 d4
+J d4 b2
+
+J d8 f6
+J f6 h8
+
+J d8 b6

@@ -21,7 +21,7 @@ public class homework {
         Scanner scanner = null;
         try {
             //scanner = new Scanner(new File("input.txt"));
-            scanner = new Scanner(new File("homework/src/work/input4.txt"));
+            scanner = new Scanner(new File("homework/src/work/input6.txt"));
             String typeOfPlay = scanner.nextLine();
 
             boolean isNextMoveBlack = scanner.nextLine().equals(BLACK);
@@ -35,8 +35,8 @@ public class homework {
                 boardArray[i] = nextRow;
             }
 
-            Board board = new Board(boardArray, isNextMoveBlack);
-            generateAndOutputBestMove(board, 4);
+            Board board = new Board(boardArray, isNextMoveBlack, isNextMoveBlack, typeOfPlay.equals(GAME));
+            generateAndOutputBestMove(board, 7);
 
         } catch (Exception e) {
             e.printStackTrace();

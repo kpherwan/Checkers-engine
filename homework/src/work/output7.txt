@@ -1,0 +1,9 @@
+J e5 c7
+J c7 a5
+J a5 c3
+J c3 e5
+
+J e5 c3
+J c3 a5
+J a5 c7
+J c7 e5

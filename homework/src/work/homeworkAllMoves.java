@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
+import static work.Helper.generateAndOutputBestMove;
 import static work.Helper.generateAndPrintAllLegalMoves;
 
 public class homeworkAllMoves {
@@ -19,7 +20,7 @@ public class homeworkAllMoves {
         Scanner scanner = null;
         try {
             //scanner = new Scanner(new File("input.txt"));
-            scanner = new Scanner(new File("homework/src/work/input4.txt"));
+            scanner = new Scanner(new File("homework/src/work/input6.txt"));
             String typeOfPlay = scanner.nextLine();
 
             boolean isNextMoveBlack = scanner.nextLine().equals(BLACK);
@@ -32,7 +33,9 @@ public class homeworkAllMoves {
                 boardArray[i] = nextRow;
             }
 
-            generateAndPrintAllLegalMoves(new Board(boardArray, isNextMoveBlack));
+            Board board = new Board(boardArray, isNextMoveBlack, isNextMoveBlack, typeOfPlay.equals(GAME));
+            generateAndPrintAllLegalMoves(board);
+            generateAndOutputBestMove(board, 7);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -47,9 +47,10 @@ public class homework2 {
                     boardArray[i][j] = map.get(player);
                 }
             }
-            Board board = new Board(boardArray, isNextMoveBlack);
+            Board board = new Board(boardArray, isNextMoveBlack, isNextMoveBlack, typeOfPlay.equals(GAME));
             generateAndPrintAllLegalMoves(board);
-            generateAndOutputBestMove(board, 7);
+            Move move = generateAndOutputBestMove(board, 10);
+            System.out.println(move.toNumericString());
 
         } catch (Exception e) {
             e.printStackTrace();

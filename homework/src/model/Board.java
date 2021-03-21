@@ -1,9 +1,7 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Stack;
+import java.io.File;
+import java.util.*;
 
 public class Board {
     public static final char EMPTY_CELL = '.';
@@ -11,10 +9,7 @@ public class Board {
     public static final char WHITE_WOMAN = 'w';
     public static final char BLACK_QUEEN = 'B';
     public static final char WHITE_QUEEN = 'W';
-
-    public char[][] getBoard() {
-        return board;
-    }
+    public static final String GAMEPLAY_FILE = "playdata.txt";
 
     private char[][] board;
 
@@ -23,54 +18,161 @@ public class Board {
     private int noOfBlackQueenCoins;
     private int noOfWhiteQueenCoins;
 
-    public boolean isNextMoveBlack() {
-        return isNextMoveBlack;
-    }
-
-    public void flipNextMoveColor() {
-        isNextMoveBlack = !isNextMoveBlack;
-    }
-
     private boolean isNextMoveBlack;
-    private int currentMoveNumber;
-    private int moveNumberOfLastMaterialChange;
-    private int[] movesHashArr;
-    private boolean isEngineBlack;
+    private int plysCompletedSoFar;
+    private int plyNumberOfLastMaterialChange;
+    public boolean isEngineBlack;
 
-    public Board() {
-        board = new char[8][8];
-        noOfBlackCoins = 12;
-        noOfWhiteCoins = 12;
-        isNextMoveBlack = true;    //Black opens the game
+    public void printTotalRemainingCoins() {
+        System.out.println("BLACK " + noOfBlackCoins);
+        System.out.println("WHITE " + noOfWhiteCoins);
+        System.out.println("BLACK QUEEN " + noOfBlackQueenCoins);
+        System.out.println("WHITE QUEEN " + noOfWhiteQueenCoins);
+    }
 
+    public Map<Integer, Integer> getFreqOfBoardStates() {
+        return freqOfBoardStates;
+    }
+
+    public void setFreqOfBoardStates(Map<Integer, Integer> freqOfBoardStates) {
+        this.freqOfBoardStates = freqOfBoardStates;
+    }
+
+    private Map<Integer, Integer> freqOfBoardStates;
+
+    public boolean isGameMode() {
+        return isGameMode;
+    }
+
+    private boolean isGameMode;
+
+    public char getEngineColor() {
+        return isEngineBlack ? BLACK_QUEEN : WHITE_QUEEN;
+    }
+
+    public static char[][] getInitialBoardArray() {
+        char boardArr[][] = new char[8][8];
         for (int i=0;i<8;i++)
             for (int j=0;j<8;j++)
-                board[i][j] = EMPTY_CELL;
-
-        for (int i=1;i<8;i+=2) {
-            board[i][1] = BLACK_WOMAN;
-            board[i][5] = 'w';
-            board[i][7] = 'w';
-        }
+                boardArr[i][j] = EMPTY_CELL;
 
         for (int i=0;i<8;i+=2) {
-            board[i][0] = BLACK_WOMAN;
-            board[i][2] = BLACK_WOMAN;
-            board[i][6] = 'w';
+            boardArr[1][i] = BLACK_WOMAN;
+            boardArr[5][i] = 'w';
+            boardArr[7][i] = 'w';
+        }
+
+        for (int i=1;i<8;i+=2) {
+            boardArr[0][i] = BLACK_WOMAN;
+            boardArr[2][i] = BLACK_WOMAN;
+            boardArr[6][i] = 'w';
+        }
+        return boardArr;
+    }
+
+    public Board(char[][] board, boolean isNextMoveBlack, boolean isEngineBlack, boolean isGameMode) {
+        this(board, isNextMoveBlack, isEngineBlack);
+        this.isGameMode = isGameMode;
+        this.freqOfBoardStates = new HashMap<>();
+
+        // updateFromGamePlayFile();
+    }
+
+    private void updateFromGamePlayFile() {
+        if (isGameMode) {
+            Scanner scanner = null;
+            try {
+                File tempFile = new File(GAMEPLAY_FILE);
+                boolean exists = tempFile.exists();
+                if (exists) {
+                    scanner = new Scanner(new File(GAMEPLAY_FILE));
+                    this.plysCompletedSoFar = Integer.parseInt(scanner.nextLine()) + 1;
+                    this.plyNumberOfLastMaterialChange = Integer.parseInt(scanner.nextLine());
+
+                    int updatedCountOfBlackCoins = Integer.parseInt(scanner.nextLine());
+                    int updatedCountOfBlackQueens = Integer.parseInt(scanner.nextLine());
+                    int updatedCountOfWhiteCoins = Integer.parseInt(scanner.nextLine());
+                    int updatedCountOfWhiteQueens = Integer.parseInt(scanner.nextLine());
+
+                    if (updatedCountOfBlackCoins != this.getNoOfBlackCoins() || updatedCountOfBlackQueens != this.getNoOfBlackQueenCoins() ||
+                    updatedCountOfWhiteCoins != this.getNoOfWhiteCoins() && updatedCountOfWhiteQueens != this.getNoOfWhiteQueenCoins()) {
+                        this.plyNumberOfLastMaterialChange = this.plysCompletedSoFar;
+                    }
+
+                    int countOfStates = Integer.parseInt(scanner.nextLine());
+                    for(int i=0; i<countOfStates; i++) {
+                        String[] freq = scanner.nextLine().split(" ");
+                        freqOfBoardStates.put(Integer.parseInt(freq[0]), Integer.parseInt(freq[1]));
+                    }
+                }
+                addToFreqStates(board);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public Board(char[][] board, boolean isNextMoveBlack) {
+    public void addToFreqStates(char[][] board) {
+        int hashCode = Arrays.deepHashCode(board);
+        if (freqOfBoardStates.get(hashCode) != null) {
+            freqOfBoardStates.put(hashCode, freqOfBoardStates.get(hashCode) + 1);
+        }
+        else {
+            freqOfBoardStates.put(hashCode, 1);
+        }
+    }
+
+    public Board(char[][] board, boolean isNextMoveBlack, boolean isEngineBlack) {
         this.board = board;
         this.isNextMoveBlack = isNextMoveBlack;
-        this.isEngineBlack = isNextMoveBlack;
-        noOfBlackCoins = 12;
-        noOfWhiteCoins = 12;
+        this.isEngineBlack = isEngineBlack;
+
+        for (int i=0; i<8; i++) {
+            for (int j=0; j<8; j++) {
+                if (board[i][j] == BLACK_WOMAN) {
+                    incrementBlackCoins();
+                }
+                else if (board[i][j] == WHITE_WOMAN) {
+                    incrementWhiteCoins();
+                }
+                else if (board[i][j] == BLACK_QUEEN) {
+                    incrementBlackQueenCoins();
+                }
+                else if (board[i][j] == WHITE_QUEEN) {
+                    incrementWhiteQueenCoins();
+                }
+            }
+        }
+    }
+
+    public Board(char[][] board, boolean isNextMoveBlack, boolean isEngineBlack, int noOfBlackCoins, int noOfBlackQueenCoins, int noOfWhiteCoins,
+                 int noOfWhiteQueenCoins, int plysCompletedSoFar, int plyNumberOfLastMaterialChange, Map<Integer, Integer> freqOfBoardStates) {
+        this.board = board;
+        this.isNextMoveBlack = isNextMoveBlack;
+        this.isEngineBlack = isEngineBlack;
+
+        this.noOfBlackCoins = noOfBlackCoins;
+        this.noOfBlackQueenCoins = noOfBlackQueenCoins;
+        this.noOfWhiteCoins = noOfWhiteCoins;
+        this.noOfWhiteQueenCoins = noOfWhiteQueenCoins;
+        this.plysCompletedSoFar = plysCompletedSoFar;
+        this.plyNumberOfLastMaterialChange = plyNumberOfLastMaterialChange;
+        this.freqOfBoardStates = freqOfBoardStates;
     }
 
     public void printBoard() {
         for(int i=0; i<8; i++) {
-            System.out.println(Arrays.toString(board[i]));
+            System.out.println(i + " : " + Arrays.toString(board[i]));
+        }
+    }
+
+    public void printBoardForInput() {
+        for(int i=0; i<8; i++) {
+            for(int j=0; j<8; j++) {
+                System.out.print(board[i][j]);
+            }
+            System.out.println();
         }
     }
 
@@ -249,14 +351,16 @@ public class Board {
             tempBoard[destinationRow][destinationColumn] = EMPTY_CELL;
         }
 
-        Move move = new Move(Move.TypeOfMove.J);
-        List<Move> allJumps = new ArrayList<>();
-        while(!stack.isEmpty() && !multiJumpFound) {
-            allJumps.add(0, stack.pop());
+        if (!stack.isEmpty() && !multiJumpFound) {
+            Move move = new Move(Move.TypeOfMove.J);
+            List<Move> allJumps = new ArrayList<>();
+            while(!stack.isEmpty() && !multiJumpFound) {
+                allJumps.add(0, stack.pop());
+            }
+            move.jumps = allJumps;
+            jumps.add(move);
         }
-        move.jumps = allJumps;
 
-        jumps.add(move);
     }
 
     public boolean isEngineBlack() {
@@ -273,6 +377,14 @@ public class Board {
 
     public int getNoOfBlackCoins() {
         return noOfBlackCoins;
+    }
+
+    public int getTotalBlackCoins() {
+        return noOfBlackCoins + noOfBlackQueenCoins;
+    }
+
+    public int getTotalWhiteCoins() {
+        return noOfWhiteCoins + noOfWhiteQueenCoins;
     }
 
     public int getNoOfBlackQueenCoins() {
@@ -309,17 +421,86 @@ public class Board {
         noOfWhiteQueenCoins++;
     }
 
+    public void incrementBlackCoins() {
+        noOfBlackCoins++;
+    }
+
+    public void incrementWhiteCoins() {
+        noOfWhiteCoins++;
+    }
+
     public int getNoOfWhiteCoins() {
         return noOfWhiteCoins;
     }
 
-    public void incrementNumberOfMoves() {
-        currentMoveNumber++;
+    public void incrementNumberOfPlies() {
+        plysCompletedSoFar++;
     }
 
+    public void updatePlyNumberOfMaterialChange() {
+        this.plyNumberOfLastMaterialChange = plysCompletedSoFar;
+    }
+
+    public int getPlysCompletedSoFar() {
+        return plysCompletedSoFar;
+    }
+
+    public int getPlyNumberOfLastMaterialChange() {
+        return plyNumberOfLastMaterialChange;
+    }
     private void printBoard(char[][] board) {
         for (int i=0; i<8; i++) {
             System.out.println(Arrays.toString(board[i]));
         }
+    }
+
+    public char[][] getBoard() {
+        return board;
+    }
+
+    public boolean isNextMoveBlack() {
+        return isNextMoveBlack;
+    }
+
+    public char getNextMoveColor() {
+        return isNextMoveBlack() ? BLACK_QUEEN : WHITE_QUEEN;
+    }
+
+    public void flipNextMoveColor() {
+        isNextMoveBlack = !isNextMoveBlack;
+    }
+
+    public List<Integer> getPieceData() {
+        List<Integer> pieceData = new ArrayList<>();
+        int blackCoins = 0;
+        int whiteCoins = 0;
+        for (int i=0; i<4; i++) {
+            for (int j=0; j<4; j++) {
+                if (board[i][j] == WHITE_WOMAN) {
+                    whiteCoins++;
+                }
+                else if(board[i][j] == BLACK_WOMAN) {
+                    blackCoins++;
+                }
+            }
+        }
+        pieceData.add(blackCoins);
+        pieceData.add(whiteCoins);
+
+        blackCoins = 0;
+        whiteCoins = 0;
+        for (int i=4; i<8; i++) {
+            for (int j=4; j<8; j++) {
+                if (board[i][j] == WHITE_WOMAN) {
+                    whiteCoins++;
+                }
+                else if(board[i][j] == BLACK_WOMAN) {
+                    blackCoins++;
+                }
+            }
+        }
+        pieceData.add(blackCoins);
+        pieceData.add(whiteCoins);
+        return pieceData;
     }
 }
