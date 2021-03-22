@@ -7,6 +7,7 @@ import model.Move;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -35,20 +36,19 @@ public class Engine {
         double currentScore;
 
         if (allLegalMoves.size() == 1) {
-            /* if (board.isGameMode()) {
+            /*if (board.isGameMode()) {
                 bestMoveSoFar = allLegalMoves.get(0);
                 Board newFutureBoard = getNextState(board, bestMoveSoFar);
-                updateGamePlayFile(newFutureBoard);
+                updateGamePlayFile(newFutureBoard, bestMoveSoFar);
             }*/
             return allLegalMoves.get(0);
         }
 
         if (allLegalMoves.size() == 0) {
-            System.out.println("SON, YOU SEEM TO HAVE SCREWED UP");
+            System.out.println("404 MOVES NOT FOUND, SEE YOU LATER ALLIGATOR");
             return null;
         }
 
-        System.out.println("Prune count " + pruneCount);
         for (Move currentMove: allLegalMoves) {
             Board newFutureBoard = getNextState(board, currentMove);
 
@@ -58,26 +58,20 @@ public class Engine {
                 bestScoreSoFar = currentScore;
                 bestMoveSoFar = currentMove;
             }
-
         }
-        System.out.println("Prune count " + pruneCount);
-        /* if (board.isGameMode()) {
+        // System.out.println("Prune count " + pruneCount);
+        /*if (board.isGameMode()) {
             Board newFutureBoard = getNextState(board, bestMoveSoFar);
-            //updateGamePlayFile(newFutureBoard);
-            System.out.println("SINGLE");
-            System.out.println(newFutureBoard.isNextMoveBlack() ? "BLACK" : "WHITE");
-            System.out.println(100);
-            newFutureBoard.printBoardForInput();
-            newFutureBoard.printTotalRemainingCoins();
+            updateGamePlayFile(newFutureBoard, bestMoveSoFar);
         }*/
 
         return bestMoveSoFar;
     }
 
-    private void updateGamePlayFile(Board newFutureBoard) {
+    /*private void updateGamePlayFile(Board newFutureBoard, Move bestMoveSoFar) {
         File myObj = new File(Board.GAMEPLAY_FILE);
         if (myObj.delete()) {
-            System.out.println("Deleted the file: " + myObj.getName());
+            // System.out.println("Deleted the file: " + myObj.getName());
         } else {
             System.out.println("Failed to delete the file!!!!");
         }
@@ -92,23 +86,27 @@ public class Engine {
             fw.write(newFutureBoard.getNoOfWhiteCoins() + "\n");
             fw.write(newFutureBoard.getNoOfWhiteQueenCoins() + "\n");
 
-            newFutureBoard.addToFreqStates(newFutureBoard.getBoard());
-            int sizeOfMap = newFutureBoard.getFreqOfBoardStates().size();
-            fw.write(sizeOfMap + "\n");
+            *//*newFutureBoard.addToFreqStates(newFutureBoard.getBoard());
 
-            for(Map.Entry<Integer, Integer> entry: newFutureBoard.getFreqOfBoardStates().entrySet()) {
-                fw.write(entry.getKey() + " " + entry.getValue() + "\n");
-            }
+            if (bestMoveSoFar.getTypeOfMove() == Move.TypeOfMove.E) {
+                int sizeOfMap = newFutureBoard.getFreqOfBoardStates().size();
+                fw.write(sizeOfMap + "\n");
+
+                for(Map.Entry<Integer, Integer> entry: newFutureBoard.getFreqOfBoardStates().entrySet()) {
+                    fw.write(entry.getKey() + " " + entry.getValue() + "\n");
+                }
+            }*//*
+
             fw.close();
         }
         catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     private double alphaBetaSearch(Board futureBoard, int currentDepth, double alpha, double beta, boolean isMaximizingPlayer) {
 
-        Integer terminalValue = getTerminalValueIfLeaf(futureBoard);
+        Integer terminalValue = getTerminalValueIfLeaf(futureBoard, currentDepth);
         if (terminalValue != null) {
             /* System.out.println("reached terminal value");
             futureBoard.printBoard();*/
@@ -116,7 +114,7 @@ public class Engine {
         }
 
         List<Move> allLegalMoves = futureBoard.generateAllLegalMoves();
-        Integer terminalValue2 = getTerminalValueIfLeaf2(futureBoard, allLegalMoves);
+        Integer terminalValue2 = getTerminalValueIfLeaf2(futureBoard, allLegalMoves, currentDepth);
         if (terminalValue2 != null) {
             /* System.out.println("reached terminal value");
             futureBoard.printBoard();*/
@@ -124,7 +122,7 @@ public class Engine {
         }
 
         if (currentDepth == depthToSearchFor) {
-            return getUtilityValue3(futureBoard);
+            return getUtilityValue1(futureBoard);
         }
 
         if (isMaximizingPlayer) {
@@ -136,6 +134,7 @@ public class Engine {
                 alpha = Math.max(bestValue, alpha);
 
                 if (alpha >= beta) {
+                    // System.out.println("* β cutoff *");
                     pruneCount++;
                     break;
                 }
@@ -151,6 +150,7 @@ public class Engine {
                 beta = Math.min(worstValue, beta);
 
                 if (alpha >= beta) {
+                    // System.out.println("* α cutoff *");
                     pruneCount++;
                     break;
                 }
@@ -160,13 +160,13 @@ public class Engine {
     }
 
     /*no legal moves left*/
-    private Integer getTerminalValueIfLeaf2(Board futureBoard, List<Move> allLegalMoves) {
+    private Integer getTerminalValueIfLeaf2(Board futureBoard, List<Move> allLegalMoves, int currentDepth) {
         if (allLegalMoves.size() == 0) {
             if (futureBoard.getNextMoveColor() == futureBoard.getEngineColor()) {
-                return LOSING_SCORE;
+                return LOSING_SCORE + currentDepth;
             }
             else {
-                return WINNING_SCORE;
+                return WINNING_SCORE + (depthToSearchFor - currentDepth);
             }
         }
         return null;
@@ -174,20 +174,16 @@ public class Engine {
 
     private double getUtilityValue1(Board inputBoard) {
         double value;
-        if (inputBoard.isNextMoveBlack()) {
-            /* value = (inputBoard.getNoOfBlackCoins() - inputBoard.getNoOfWhiteCoins()) +
-                    3 * (inputBoard.getNoOfBlackQueenCoins()) - inputBoard.getNoOfWhiteQueenCoins();
-            value += getNumberOfHomeRowCheckers(inputBoard);*/
+        if (inputBoard.isEngineBlack()) {
             value = (inputBoard.getTotalBlackCoins() - inputBoard.getTotalWhiteCoins()) +
                     0.5 * (inputBoard.getNoOfBlackQueenCoins() - inputBoard.getNoOfWhiteQueenCoins());
         }
         else {
-            /* value = (inputBoard.getNoOfWhiteCoins() - inputBoard.getNoOfBlackCoins()) +
-                    3 * (inputBoard.getNoOfWhiteQueenCoins()) - inputBoard.getNoOfBlackQueenCoins();
-            value += getNumberOfHomeRowCheckers(inputBoard);*/
             value = (inputBoard.getTotalWhiteCoins() - inputBoard.getTotalBlackCoins()) +
                     0.5 * (inputBoard.getNoOfWhiteQueenCoins() - inputBoard.getNoOfBlackQueenCoins());
         }
+
+        value += getNumberOfHomeRowCheckers(inputBoard);
         return value;
     }
 
@@ -209,7 +205,7 @@ public class Engine {
     private double getUtilityValue3(Board inputBoard) {
         double value = 0;
         List<Integer> noOfPieces = inputBoard.getPieceData();
-        if (inputBoard.isNextMoveBlack()) {
+        if (inputBoard.isEngineBlack()) {
             value += inputBoard.getNoOfBlackQueenCoins() * 20;
             value -= inputBoard.getNoOfWhiteQueenCoins() * 20;
 
@@ -236,12 +232,14 @@ public class Engine {
             //black women in home territory
             value -= noOfPieces.get(0) * 10;
         }
+        value += getNumberOfHomeRowCheckers(inputBoard) * 5;
+
         return value/(inputBoard.getTotalBlackCoins() + inputBoard.getTotalWhiteCoins());
     }
 
     private int getNumberOfHomeRowCheckers(Board inputBoard) {
         int total = 0;
-        if (inputBoard.isNextMoveBlack()) {
+        if (inputBoard.isEngineBlack()) {
             if (isPieceBlack(inputBoard.getBoard()[0][1])) {
                 total++;
             }
@@ -333,10 +331,11 @@ public class Engine {
 
         }
         newBoard.flipNextMoveColor();
-        newBoard.incrementNumberOfPlies();
+        /*newBoard.incrementNumberOfPlies();
         if (isMaterialChange) {
             newBoard.updatePlyNumberOfMaterialChange();
-        }
+        }*/
+        // newBoard.addToFreqStates(newBoardArray);
         return newBoard;
     }
 
@@ -359,29 +358,38 @@ public class Engine {
     }
 
     /*all pieces captured*/
-    private Integer getTerminalValueIfLeaf(Board futureBoard) {
+    private Integer getTerminalValueIfLeaf(Board futureBoard, int currentDepth) {
 
         if (futureBoard.isEngineBlack() && futureBoard.getTotalWhiteCoins() == 0) {
-            return WINNING_SCORE;
+            return WINNING_SCORE + (depthToSearchFor - currentDepth);
         }
 
         if (!futureBoard.isEngineBlack() && futureBoard.getTotalBlackCoins() == 0) {
-            return WINNING_SCORE;
+            return WINNING_SCORE + (depthToSearchFor - currentDepth);
         }
 
         if (futureBoard.isEngineBlack() && futureBoard.getTotalBlackCoins() == 0) {
-            return LOSING_SCORE;
+            return LOSING_SCORE + currentDepth;
         }
 
         if (!futureBoard.isEngineBlack() && futureBoard.getTotalWhiteCoins() == 0) {
-            return LOSING_SCORE;
+            return LOSING_SCORE + currentDepth;
         }
 
-        //draw
-        /* if ((futureBoard.getPlysCompletedSoFar() - futureBoard.getPlyNumberOfLastMaterialChange()) >= 100) {
-            System.out.println("Condition for draw reached!!");
-            return 0;
+        /*if (futureBoard.isGameMode()) {
+            //draw
+            if ((futureBoard.getPlysCompletedSoFar() - futureBoard.getPlyNumberOfLastMaterialChange()) >= 100) {
+                System.out.println("Condition for draw reached!!");
+                return 0;
+            }
+
+            *//*int hashCode = Arrays.deepHashCode(futureBoard.getBoard());
+            if (futureBoard.getFreqOfBoardStates().get(hashCode) == 3) {
+                System.out.println("Condition for draw reached!!");
+                return 0;
+            }*//*
         }*/
+
         return null;
     }
 
@@ -389,8 +397,7 @@ public class Engine {
         char[][] newBoardArray = new char[8][8];
         Board.cloneBoardArray(inputBoard.getBoard(), newBoardArray);
         Board newBoard = new Board(newBoardArray, inputBoard.isNextMoveBlack(), inputBoard.isEngineBlack(), inputBoard.getNoOfBlackCoins(),
-                inputBoard.getNoOfBlackQueenCoins(), inputBoard.getNoOfWhiteCoins(), inputBoard.getNoOfWhiteQueenCoins(), inputBoard.getPlysCompletedSoFar(),
-                inputBoard.getPlyNumberOfLastMaterialChange(), inputBoard.getFreqOfBoardStates());
+                inputBoard.getNoOfBlackQueenCoins(), inputBoard.getNoOfWhiteCoins(), inputBoard.getNoOfWhiteQueenCoins(), inputBoard.isGameMode());
         return newBoard;
     }
 

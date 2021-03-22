@@ -7,8 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-import static work.Helper.generateAndOutputBestMove;
-import static work.Helper.generateAndPrintAllLegalMoves;
+import static work.Helper.*;
 
 public class homeworkAllMoves {
     private static final String SINGLE = "SINGLE";
@@ -34,23 +33,10 @@ public class homeworkAllMoves {
             }
 
             Board board = new Board(boardArray, isNextMoveBlack, isNextMoveBlack, typeOfPlay.equals(GAME));
-            generateAndPrintAllLegalMoves(board);
-            generateAndOutputBestMove(board, 7);
+            generateAndPrintAllLegalMovesAllFormats(board);
+            generateAndOutputBestMove(board, 10);
 
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void addToOutputFile() {
-
-        try {
-            FileWriter fw = new FileWriter("output.txt");
-            fw.write("FAIL" + "\n");
-            StringBuilder sbr = new StringBuilder();
-            fw.close();
-        }
-        catch (IOException e) {
             e.printStackTrace();
         }
     }

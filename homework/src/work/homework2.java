@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import static work.Helper.generateAndOutputBestMove;
-import static work.Helper.generateAndPrintAllLegalMoves;
+import static work.Helper.*;
 
 public class homework2 {
     private static final String SINGLE = "SINGLE";
@@ -49,8 +48,8 @@ public class homework2 {
             }
             Board board = new Board(boardArray, isNextMoveBlack, isNextMoveBlack, typeOfPlay.equals(GAME));
             generateAndPrintAllLegalMoves(board);
-            Move move = generateAndOutputBestMove(board, 10);
-            System.out.println(move.toNumericString());
+            Move move = generateAndOutputBestMove(board, getRandomNumber(4, 10));
+
 
         } catch (Exception e) {
             e.printStackTrace();

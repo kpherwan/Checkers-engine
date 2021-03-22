@@ -9,23 +9,19 @@ import java.util.Random;
 import java.util.Scanner;
 
 import static work.Helper.generateAndOutputBestMove;
+import static work.Helper.getRandomNumber;
 
-public class game {
+public class selfGame {
     private static final String SINGLE = "SINGLE";
     private static final String GAME = "GAME";
     private static final String BLACK = "BLACK";
     private static final String WHITE = "WHITE";
 
-    public static int getRandomNumber(int min, int max) {
-        return (int) ((Math.random() * (max - min)) + min);
-    }
-
     public static void main(String[] args) {
             long startTime = System.currentTimeMillis();
-            /* boolean isEngineBlack = new Random().nextBoolean();
-            System.out.println("Engine is : " + (isEngineBlack ? "BLACK" : "WHITE"));*/
-            int depth = getRandomNumber(3, 12);
+            int depth = getRandomNumber(4, 10);
             System.out.println("DEPTH: " + depth);
+            int moveNum = 1;
 
             Board board = new Board(Board.getInitialBoardArray(), true, true, true);
             board.printBoard();
@@ -35,7 +31,7 @@ public class game {
             System.out.println();
 
             while(nextMove != null) {
-                System.out.println("Next move :" + nextMove.toString());
+                System.out.println("Move #" + (moveNum++) + " : " + nextMove.toString() + " " + nextMove.getTypeOfMove());
                 board = Engine.getNextState(board, nextMove);
                 board.isEngineBlack = board.isNextMoveBlack();
                 board.printBoard();

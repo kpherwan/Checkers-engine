@@ -9,7 +9,7 @@ public class Board {
     public static final char WHITE_WOMAN = 'w';
     public static final char BLACK_QUEEN = 'B';
     public static final char WHITE_QUEEN = 'W';
-    public static final String GAMEPLAY_FILE = "playdata.txt";
+    // public static final String GAMEPLAY_FILE = "playdata.txt";
 
     private char[][] board;
 
@@ -19,8 +19,8 @@ public class Board {
     private int noOfWhiteQueenCoins;
 
     private boolean isNextMoveBlack;
-    private int plysCompletedSoFar;
-    private int plyNumberOfLastMaterialChange;
+    /*private int plysCompletedSoFar;
+    private int plyNumberOfLastMaterialChange;*/
     public boolean isEngineBlack;
 
     public void printTotalRemainingCoins() {
@@ -30,15 +30,15 @@ public class Board {
         System.out.println("WHITE QUEEN " + noOfWhiteQueenCoins);
     }
 
-    public Map<Integer, Integer> getFreqOfBoardStates() {
+    /*public Map<Integer, Integer> getFreqOfBoardStates() {
         return freqOfBoardStates;
     }
 
     public void setFreqOfBoardStates(Map<Integer, Integer> freqOfBoardStates) {
         this.freqOfBoardStates = freqOfBoardStates;
-    }
+    }*/
 
-    private Map<Integer, Integer> freqOfBoardStates;
+    // private Map<Integer, Integer> freqOfBoardStates;
 
     public boolean isGameMode() {
         return isGameMode;
@@ -73,12 +73,12 @@ public class Board {
     public Board(char[][] board, boolean isNextMoveBlack, boolean isEngineBlack, boolean isGameMode) {
         this(board, isNextMoveBlack, isEngineBlack);
         this.isGameMode = isGameMode;
-        this.freqOfBoardStates = new HashMap<>();
+        // this.freqOfBoardStates = new HashMap<>();
 
         // updateFromGamePlayFile();
     }
 
-    private void updateFromGamePlayFile() {
+    /*private void updateFromGamePlayFile() {
         if (isGameMode) {
             Scanner scanner = null;
             try {
@@ -95,25 +95,28 @@ public class Board {
                     int updatedCountOfWhiteQueens = Integer.parseInt(scanner.nextLine());
 
                     if (updatedCountOfBlackCoins != this.getNoOfBlackCoins() || updatedCountOfBlackQueens != this.getNoOfBlackQueenCoins() ||
-                    updatedCountOfWhiteCoins != this.getNoOfWhiteCoins() && updatedCountOfWhiteQueens != this.getNoOfWhiteQueenCoins()) {
+                            updatedCountOfWhiteCoins != this.getNoOfWhiteCoins() && updatedCountOfWhiteQueens != this.getNoOfWhiteQueenCoins()) {
                         this.plyNumberOfLastMaterialChange = this.plysCompletedSoFar;
                     }
 
-                    int countOfStates = Integer.parseInt(scanner.nextLine());
-                    for(int i=0; i<countOfStates; i++) {
-                        String[] freq = scanner.nextLine().split(" ");
-                        freqOfBoardStates.put(Integer.parseInt(freq[0]), Integer.parseInt(freq[1]));
+                    *//*else {
+                        int countOfStates = Integer.parseInt(scanner.nextLine());
+                        for(int i=0; i<countOfStates; i++) {
+                            String[] freq = scanner.nextLine().split(" ");
+                            freqOfBoardStates.put(Integer.parseInt(freq[0]), Integer.parseInt(freq[1]));
+                        }
                     }
                 }
-                addToFreqStates(board);
+                addToFreqStates(board);*//*
+                }
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
         }
-    }
+    }*/
 
-    public void addToFreqStates(char[][] board) {
+    /*public void addToFreqStates(char[][] board) {
         int hashCode = Arrays.deepHashCode(board);
         if (freqOfBoardStates.get(hashCode) != null) {
             freqOfBoardStates.put(hashCode, freqOfBoardStates.get(hashCode) + 1);
@@ -121,7 +124,7 @@ public class Board {
         else {
             freqOfBoardStates.put(hashCode, 1);
         }
-    }
+    }*/
 
     public Board(char[][] board, boolean isNextMoveBlack, boolean isEngineBlack) {
         this.board = board;
@@ -147,7 +150,7 @@ public class Board {
     }
 
     public Board(char[][] board, boolean isNextMoveBlack, boolean isEngineBlack, int noOfBlackCoins, int noOfBlackQueenCoins, int noOfWhiteCoins,
-                 int noOfWhiteQueenCoins, int plysCompletedSoFar, int plyNumberOfLastMaterialChange, Map<Integer, Integer> freqOfBoardStates) {
+                 int noOfWhiteQueenCoins, boolean isGameMode) {
         this.board = board;
         this.isNextMoveBlack = isNextMoveBlack;
         this.isEngineBlack = isEngineBlack;
@@ -156,9 +159,10 @@ public class Board {
         this.noOfBlackQueenCoins = noOfBlackQueenCoins;
         this.noOfWhiteCoins = noOfWhiteCoins;
         this.noOfWhiteQueenCoins = noOfWhiteQueenCoins;
-        this.plysCompletedSoFar = plysCompletedSoFar;
-        this.plyNumberOfLastMaterialChange = plyNumberOfLastMaterialChange;
-        this.freqOfBoardStates = freqOfBoardStates;
+        /* this.plysCompletedSoFar = plysCompletedSoFar;
+        this.plyNumberOfLastMaterialChange = plyNumberOfLastMaterialChange;*/
+        //this.freqOfBoardStates = new HashMap<>(freqOfBoardStates);
+        this.isGameMode = isGameMode;
     }
 
     public void printBoard() {
@@ -433,7 +437,7 @@ public class Board {
         return noOfWhiteCoins;
     }
 
-    public void incrementNumberOfPlies() {
+    /*public void incrementNumberOfPlies() {
         plysCompletedSoFar++;
     }
 
@@ -447,7 +451,7 @@ public class Board {
 
     public int getPlyNumberOfLastMaterialChange() {
         return plyNumberOfLastMaterialChange;
-    }
+    }*/
     private void printBoard(char[][] board) {
         for (int i=0; i<8; i++) {
             System.out.println(Arrays.toString(board[i]));
@@ -475,7 +479,7 @@ public class Board {
         int blackCoins = 0;
         int whiteCoins = 0;
         for (int i=0; i<4; i++) {
-            for (int j=0; j<4; j++) {
+            for (int j=0; j<8; j++) {
                 if (board[i][j] == WHITE_WOMAN) {
                     whiteCoins++;
                 }
@@ -490,7 +494,7 @@ public class Board {
         blackCoins = 0;
         whiteCoins = 0;
         for (int i=4; i<8; i++) {
-            for (int j=4; j<8; j++) {
+            for (int j=0; j<8; j++) {
                 if (board[i][j] == WHITE_WOMAN) {
                     whiteCoins++;
                 }
@@ -502,5 +506,12 @@ public class Board {
         pieceData.add(blackCoins);
         pieceData.add(whiteCoins);
         return pieceData;
+    }
+
+    public int getCountOfAgentPieces() {
+        if (isEngineBlack()) {
+            return getNoOfBlackCoins() + getNoOfBlackQueenCoins();
+        }
+        return getNoOfWhiteCoins() + getNoOfWhiteQueenCoins();
     }
 }

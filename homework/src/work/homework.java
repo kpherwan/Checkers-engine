@@ -8,8 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-import static work.Helper.generateAndOutputBestMove;
-import static work.Helper.generateAndPrintAllLegalMoves;
+import static work.Helper.*;
 
 public class homework {
     private static final String SINGLE = "SINGLE";
@@ -20,13 +19,12 @@ public class homework {
     public static void main(String[] args) {
         Scanner scanner = null;
         try {
+            long startTime = System.currentTimeMillis();
             //scanner = new Scanner(new File("input.txt"));
             scanner = new Scanner(new File("homework/src/work/input6.txt"));
             String typeOfPlay = scanner.nextLine();
 
             boolean isNextMoveBlack = scanner.nextLine().equals(BLACK);
-
-            //todo: use this time
             double playTimeInSeconds = Double.parseDouble(scanner.nextLine());
             char boardArray[][] = new char[8][8];
 
@@ -35,12 +33,34 @@ public class homework {
                 boardArray[i] = nextRow;
             }
 
+            int depth = getBestDepth(typeOfPlay, playTimeInSeconds);
             Board board = new Board(boardArray, isNextMoveBlack, isNextMoveBlack, typeOfPlay.equals(GAME));
-            generateAndOutputBestMove(board, 7);
+            generateAndOutputBestMove(board, depth);
+
+            long endTime = System.currentTimeMillis();
+            System.out.println("TOTAL time taken: " + (endTime - startTime) + " milli secs");
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static int getBestDepth(String typeOfPlay, double playTimeInSeconds) {
+        int depth = 4;
+
+        switch(typeOfPlay) {
+            case SINGLE:
+                if (playTimeInSeconds < 1) {
+                    return 2;
+                }
+                return 4;
+            case GAME:
+                if (playTimeInSeconds < 50) {
+                    return 4;
+                }
+                return getRandomNumber(4, 10);
+        }
+        return depth;
     }
 }
 
